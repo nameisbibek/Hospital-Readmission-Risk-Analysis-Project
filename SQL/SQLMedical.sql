@@ -37,7 +37,7 @@ select
 from hospital_readmissions
 
 
--- ## checking distinct values
+-- checking distinct values
 	-- Checking distinct Medical specialty values
 	select distinct medical_specialty
 	from hospital_readmissions
@@ -56,6 +56,39 @@ FROM hospital_readmissions;
 update hospital_readmissions
 set time_in_hospital = 'Unknown'
 where time_in_hospital is NULL
+
+	-- ## no NULL values so its good here
+
+
+-- checking duplicates
+SELECT *,
+       COUNT(*) AS DuplicateCount
+FROM hospital_readmissions
+GROUP BY
+    age,time_in_hospital,n_lab_procedures,n_procedures,n_medications, n_outpatient,n_inpatient, n_emergency, medical_specialty, diag_1,diag_2, diag_3, glucose_test, A1Ctest, change, diabetes_med, readmitted
+HAVING COUNT(*) > 1;
+
+	-- ## No duplicates found.
+
+
+-- checking what/number medical_specialty patients are having diabetes_med?
+
+-- checking and knowing column
+select distinct diabetes_med
+from hospital_readmissions
+
+	-- ## it is 0 (not taking) or 1 (taking)
+
+-- checking
+SELECT
+    medical_specialty as MedicalType,
+    COUNT(*) as TotalPatients
+FROM hospital_readmissions
+WHERE diabetes_med = '1'
+GROUP BY medical_specialty
+ORDER BY TotalPatients DESC;
+
+	-- ## Missing type has highest 9462 and Surgery has lowest 932 people taking diabetes med.
 
 
 
