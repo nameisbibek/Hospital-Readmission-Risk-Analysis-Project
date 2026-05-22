@@ -6,9 +6,9 @@ create database [Hospital Readmission Risk Analysis]
 -- use database
 use [Hospital Readmission Risk Analysis]
 
--- checking data values import
-select * from hospital_readmissions
 
+-- checking the table data
+select * from hospital_readmissions 
 
 -- checking NULL values 1 column at a time
 select count(*) as MissingAge
@@ -88,7 +88,33 @@ WHERE diabetes_med = '1'
 GROUP BY medical_specialty
 ORDER BY TotalPatients DESC;
 
-	-- ## Missing type has highest 9462 and Surgery has lowest 932 people taking diabetes med.
+	-- ## "Missing" type has highest 9462 and "Surgery" type has lowest 932 people taking diabetes med.
 
 
+-- Readmission Risk analysis (which age group is visiting hospital frequently?)
 
+--inspecting the column
+select distinct age
+from hospital_readmissions
+order by age
+
+	-- ## age group is [40-50), [50-60)...[90-100)
+
+
+-- sum of different age groups staying in hospital
+select age, sum(time_in_hospital) as 'Total hospital stay'
+from hospital_readmissions
+Group by age
+order by 'Total hospital stay' desc
+
+	-- ## [70-80) age stayed more days 31444 and [90-100) stayed less days 3572
+
+
+-- Number of patient in different age groups readmitted in the hospital
+select age, count(*) as 'Total Readmitted Patient'
+from hospital_readmissions
+where readmitted = '1'
+group by age
+order by 'Total Readmitted Patient' desc
+
+	-- ## [70-80) has the most 3336 and [90-100) has less 316 readmitted patient
