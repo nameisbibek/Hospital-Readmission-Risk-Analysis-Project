@@ -118,3 +118,30 @@ group by age
 order by 'Total Readmitted Patient' desc
 
 	-- ## [70-80) has the most 3336 and [90-100) has less 316 readmitted patient
+
+
+-- Calculating Readmission Rate by Medical Specialty
+-- Readmission Rate = (Readmission Patient/ Total patient) * 100
+
+	-- checking total patients per speciality
+	select medical_specialty, count(*) as TotalPatients
+	from hospital_readmissions
+	group by medical_specialty
+	order by TotalPatients desc
+
+	-- checking readimission patients per speciality
+	select medical_specialty, count(*) as PatientsReadmited
+	from hospital_readmissions
+	where readmitted = 1
+	group by medical_specialty
+	order by PatientsReadmited desc
+
+	-- calculating Readmission Rate
+	select medical_specialty, count(*) as TotalPatient,
+		count(case when readmitted = 1 then 1 end) as ReadmittedPatients,
+		Count(case when readmitted = 1 then 1 end)*100/count(*) as ReadmissionRate
+	from hospital_readmissions
+	group by medical_specialty
+	order by TotalPatient desc
+
+-- ## "Emergency/Family" has highest readmission rate = 49 and "Surgery/Other" has lowest = 41
