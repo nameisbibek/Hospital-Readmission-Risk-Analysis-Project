@@ -91,33 +91,42 @@ ORDER BY TotalPatients DESC;
 	-- ## "Missing" type has highest 9462 and "Surgery" type has lowest 932 people taking diabetes med.
 
 
+
+-- ###########################Table Refrence######################################
+select * from hospital_readmissions
+
+
 -- Readmission Risk analysis (which age group is visiting hospital frequently?)
 
---inspecting the column
-select distinct age
-from hospital_readmissions
-order by age
+	--inspecting the column
+	select distinct age
+	from hospital_readmissions
+	order by age
 
 	-- ## age group is [40-50), [50-60)...[90-100)
 
 
--- sum of different age groups staying in hospital
-select age, sum(time_in_hospital) as 'Total hospital stay'
-from hospital_readmissions
-Group by age
-order by 'Total hospital stay' desc
+	-- sum of different age groups staying in hospital
+	select age, sum(time_in_hospital) as 'Total hospital stay'
+	from hospital_readmissions
+	Group by age
+	order by 'Total hospital stay' desc
 
 	-- ## [70-80) age stayed more days 31444 and [90-100) stayed less days 3572
 
 
--- Number of patient in different age groups readmitted in the hospital
-select age, count(*) as 'Total Readmitted Patient'
-from hospital_readmissions
-where readmitted = '1'
-group by age
-order by 'Total Readmitted Patient' desc
+	-- Number of patient in different age groups readmitted in the hospital
+	select age, count(*) as 'Total Readmitted Patient'
+	from hospital_readmissions
+	where readmitted = '1'
+	group by age
+	order by 'Total Readmitted Patient' desc
 
-	-- ## [70-80) has the most 3336 and [90-100) has less 316 readmitted patient
+-- ## [70-80) has the most 3336 and [90-100) has less 316 readmitted patient
+
+
+-- ###########################Table Refrence######################################
+select * from hospital_readmissions
 
 
 -- Calculating Readmission Rate by Medical Specialty
@@ -144,4 +153,35 @@ order by 'Total Readmitted Patient' desc
 	group by medical_specialty
 	order by TotalPatient desc
 
--- ## "Emergency/Family" has highest readmission rate = 49 and "Surgery/Other" has lowest = 41
+-- ## "Emergency & Family" has highest readmission rate = 49 and "Surgery & Other" has lowest = 41
+
+
+-- ###########################Table Refrence######################################
+select * from hospital_readmissions
+
+
+-- Calculating Medication Impact on Readmission for diabetic patients
+-- using diabetes_med and readmitted column
+
+	-- verifing the (yes/no) values
+	select distinct diabetes_med
+	from hospital_readmissions
+
+	select distinct readmitted
+	from hospital_readmissions
+	-- Verified
+
+	-- Calculating (readmitted patients/total patients)*100
+	select diabetes_med,
+		count(*) as TotalPatient,
+		count( case when readmitted = 1 then 1 end) as ReadmittedPatient,
+		cast ( count ( case when readmitted = 1 then 1 end) *100.0/count(*) as decimal(10,2) ) as ReadmissionRate
+	from hospital_readmissions
+	group by diabetes_med
+
+
+--## Readmission rate of patient with medication is 48.72% and without is 41.35%
+
+
+-- ###########################Table Refrence######################################
+select * from hospital_readmissions
