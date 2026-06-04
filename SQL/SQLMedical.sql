@@ -185,3 +185,60 @@ select * from hospital_readmissions
 
 -- ###########################Table Refrence######################################
 select * from hospital_readmissions
+
+
+-- Creating High-Risk Patient Flags
+-- High risk elements emergency visit >= 2, inpatient visit>= 2 or hospital stay >= 5
+
+	-- count high risk patient
+	select case when n_emergency >= 2 then 1
+				when n_inpatient >= 2 then 1
+				when time_in_hospital >= 5 then 1
+				else 0 end 
+				as Highrisk_flag,
+			COUNT(*) as TotalPatient
+	from hospital_readmissions
+	group by case when n_emergency >= 2 then 1
+				when n_inpatient >= 2 then 1
+				when time_in_hospital >= 5 then 1
+				else 0 end
+
+--## Total High Risk Patients are 11985
+
+
+-- Also determining High Risk VS Readmission Rate
+
+	--calculating (highrisk readmitted patient/total patient)*100
+	select case when n_emergency >= 2 then 1
+				when n_inpatient >= 2 then 1
+				when time_in_hospital >= 5 then 1
+				else 0 end
+				as HighRisk_Flag,
+			count(*) as TotalPatient,
+
+			sum(case when readmitted =1 then 1 else 0 end) as ReadmittedPatient,
+
+			cast( sum(case when readmitted =1 then 1 else 0 end)*100.0/count(*) as decimal(10,2) ) as ReadmissionRate
+	from hospital_readmissions
+	group by case when n_emergency >= 2 then 1
+				when n_inpatient >= 2 then 1
+				when time_in_hospital >= 5 then 1
+				else 0 end
+
+--## Readmission rate for Highrisk patient is 53.21% and not high risk patient is 41.31%
+
+-- ********CREATING COLUMN FOR FLAGGED PATIENT***********	
+	
+	-- Create column
+	ALTER TABLE hospital_readmissions
+	ADD HighRisk_Flag INT;
+	
+	-- Store the values as HighRisk = 1 or not highRisk = 0
+	update hospital_readmissions
+	set HighRisk_Flag = 
+		case when n_emergency >= 2 then 1
+			when n_inpatient >= 2 then 1
+			when time_in_hospital >= 5 then 1
+			else 0 end
+
+							
