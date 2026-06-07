@@ -267,7 +267,7 @@ select * from hospital_readmissions
 -- Age of  highest readmission RATE is [80-90) is 49.58% and lowest is [90-100) is 42.13%
 
 
--- Using Window function
+-- Age group with highest readmission RATE using CTE and used Window function
 	SELECT
 		age,
 		time_in_hospital,
@@ -277,3 +277,57 @@ select * from hospital_readmissions
 			AS AvgStayByAge
 
 	FROM hospital_readmissions;
+
+
+-- Creating a KPI (Key Proformance Indicator)
+-- Total Patients, Total readmitted Patients, Readmission Rate and Avg Hospital Stay
+
+	select count(*) as TotalPatients,
+		sum(case when readmitted =1 then 1 else 0 end) as TotalReadmission,
+	
+		cast(
+			sum(case when readmitted=1 then 1 else 0 end)* 100.0/count(*) as decimal(10,2)) as ReadmissionRate,
+	
+		cast( avg(time_in_hospital) as decimal (10,2)) as AvgHospitalStay
+	from hospital_readmissions
+
+--## Fro Dashboard following can be used
+-- TotalPatients= 25,000  TotalReadmission = 11,754  ReadmissionRate = 47.02 and AvgHospitalStay = 4.00
+
+
+
+-- ## CREATING IMPORTAINT AND FINAL SQL VIEW FOR READMISSION
+	
+	-- sUMMERY OF DATA
+	select count(*) as TotalPatients,
+		sum(case when readmitted =1 then 1 else 0 end) as TotalReadmission,
+	
+		cast(
+			sum(case when readmitted=1 then 1 else 0 end)* 100.0/count(*) as decimal(10,2)) as ReadmissionRate,
+	
+		cast( avg(time_in_hospital) as decimal (10,2)) as AvgHospitalStay
+	from hospital_readmissions
+
+	-- Number of patient in different age groups readmitted in the hospital
+	select age AS AgeGroup, count(*) as 'Total Readmitted Patient'
+	from hospital_readmissions
+	where readmitted = '1'
+	group by age
+	order by 'Total Readmitted Patient' desc
+	
+	-- Also determining High Risk VS Readmission Rate
+	select case when n_emergency >= 2 then 1
+				when n_inpatient >= 2 then 1
+				when time_in_hospital >= 5 then 1
+				else 0 end
+				as HighRisk_Flag,
+			count(*) as TotalPatient,
+
+			sum(case when readmitted =1 then 1 else 0 end) as ReadmittedPatient,
+
+			cast( sum(case when readmitted =1 then 1 else 0 end)*100.0/count(*) as decimal(10,2) ) as ReadmissionRate
+	from hospital_readmissions
+	group by case when n_emergency >= 2 then 1
+				when n_inpatient >= 2 then 1
+				when time_in_hospital >= 5 then 1
+				else 0 end
