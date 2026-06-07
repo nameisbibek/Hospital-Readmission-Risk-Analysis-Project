@@ -65,7 +65,7 @@ SELECT *,
        COUNT(*) AS DuplicateCount
 FROM hospital_readmissions
 GROUP BY
-    age,time_in_hospital,n_lab_procedures,n_procedures,n_medications, n_outpatient,n_inpatient, n_emergency, medical_specialty, diag_1,diag_2, diag_3, glucose_test, A1Ctest, change, diabetes_med, readmitted
+    age,time_in_hospital,n_lab_procedures,n_procedures,n_medications, n_outpatient,n_inpatient, n_emergency, medical_specialty, diag_1,diag_2, diag_3, glucose_test, A1Ctest, change, diabetes_med, readmitted, HighRisk_Flag
 HAVING COUNT(*) > 1;
 
 	-- ## No duplicates found.
@@ -73,23 +73,22 @@ HAVING COUNT(*) > 1;
 
 -- checking what/number medical_specialty patients are having diabetes_med?
 
--- checking and knowing column
-select distinct diabetes_med
-from hospital_readmissions
+	-- checking and knowing column
+	select distinct diabetes_med
+	from hospital_readmissions
 
-	-- ## it is 0 (not taking) or 1 (taking)
+		-- ## it is 0 (not taking) or 1 (taking)
 
--- checking
-SELECT
-    medical_specialty as MedicalType,
-    COUNT(*) as TotalPatients
-FROM hospital_readmissions
-WHERE diabetes_med = '1'
-GROUP BY medical_specialty
-ORDER BY TotalPatients DESC;
+	-- checking
+	SELECT
+		medical_specialty as MedicalType,
+		COUNT(*) as TotalPatients
+	FROM hospital_readmissions
+	WHERE diabetes_med = '1'
+	GROUP BY medical_specialty
+	ORDER BY TotalPatients DESC;
 
-	-- ## "Missing" type has highest 9462 and "Surgery" type has lowest 932 people taking diabetes med.
-
+-- ## "Missing" type has highest 9462 and "Surgery" type has lowest 932 people taking diabetes med.
 
 
 -- ###########################Table Refrence######################################
@@ -241,4 +240,40 @@ select * from hospital_readmissions
 			when time_in_hospital >= 5 then 1
 			else 0 end
 
+
+-- ###########################Table Refrence######################################
+select * from hospital_readmissions
+
 							
+--## USING CTE (COMMON TABLE EXPRESSIONS): creates temporary table
+-- Age group with highest readmission RATE using CTE
+
+	;with NewReadmission as
+	(
+		select age,
+			count(*) as TotalPatient,
+			sum(case when readmitted =1 then 1 else 0 end) as ReadmittedPatients
+		from hospital_readmissions
+		group by age
+	)
+
+	select age,
+		TotalPatient,
+		ReadmittedPatients,
+		cast(ReadmittedPatients * 100.0/Totalpatient as decimal(10,2)) as ReadmissionRate
+	From NewReadmission
+	order by ReadmissionRate desc
+
+-- Age of  highest readmission RATE is [80-90) is 49.58% and lowest is [90-100) is 42.13%
+
+
+-- Using Window function
+	SELECT
+		age,
+		time_in_hospital,
+
+		AVG(time_in_hospital)
+			OVER(PARTITION BY age)
+			AS AvgStayByAge
+
+	FROM hospital_readmissions;
